@@ -1,0 +1,11 @@
+{
+  "scripts": {
+    "dev": "concurrently \"npm --prefix api-cheba start\" \"npm --prefix frontend start\""
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.52.0"
+  }
+}
