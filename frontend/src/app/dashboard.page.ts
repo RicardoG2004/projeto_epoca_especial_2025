@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, AfterViewInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpClient, HttpClientModule } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
@@ -36,9 +36,11 @@ interface WeatherData {
         <h2 style="color: #1976d2; font-weight: 700; margin-bottom: 1.5rem;">
           WeatherMap
         </h2>
-        <p style="font-size: 1.2rem; color: #333; text-align: center;">
+        <p style="color: #666; text-align: center; margin-bottom: 2rem; font-size: 1rem;">
           Bem Vindo, escolha a cidade que deseja procurar.
         </p>
+
+        <!-- Search Section -->
         <form
           (ngSubmit)="searchAddress()"
           style="width:100%; margin-top:2rem; display:flex; flex-direction:column; align-items:center; gap:1rem;"
@@ -141,7 +143,11 @@ export class DashboardPage {
   private currentMap: any = null; // Para armazenar a referência do mapa atual
   currentCityName = ''; // Para armazenar o nome da cidade atual
 
-  constructor(private http: HttpClient, private router: Router, private route: ActivatedRoute) {}
+  constructor(
+    private http: HttpClient,
+    private router: Router,
+    private route: ActivatedRoute
+  ) {}
 
   ngOnInit() {
     // Verificar se há parâmetros na URL (quando regressa da página de previsão)
@@ -191,6 +197,9 @@ export class DashboardPage {
               this.showMap();
             }, 200);
             this.getWeatherData();
+            
+            // Send webhook for city search
+            this.sendCitySearchWebhook();
           } else {
             this.error = 'Cidade não encontrada.';
             this.lat = this.lon = null;
@@ -201,6 +210,64 @@ export class DashboardPage {
           this.lat = this.lon = null;
         },
       });
+  }
+
+  sendCitySearchWebhook() {
+    const token = localStorage.getItem('token');
+    if (token) {
+      // Decode JWT to get user info (basic implementation)
+      try {
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        const userEmail = payload.email;
+        const userId = payload.sub;
+        
+        console.log(`🔍 Sending city search webhook for: ${this.currentCityName}`);
+        console.log(`👤 User: ${userEmail} (${userId})`);
+        
+        this.http.post('http://localhost:3000/webhook/city-search', {
+          city: this.currentCityName,
+          userId: userId,
+          userEmail: userEmail
+        }).subscribe({
+          next: () => console.log(`✅ City search webhook sent successfully for: ${this.currentCityName}`),
+          error: (err) => console.error(`❌ Webhook error:`, err)
+        });
+      } catch (error) {
+        console.error('Error decoding token:', error);
+      }
+    } else {
+      console.log(`🔴 No token found - webhook not sent for city: ${this.currentCityName}`);
+    }
+  }
+
+  sendWeatherFetchWebhook() {
+    const token = localStorage.getItem('token');
+    if (token && this.lat && this.lon) {
+      try {
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        const userEmail = payload.email;
+        const userId = payload.sub;
+        
+        console.log(`🌤️ Sending weather fetch webhook for: ${this.currentCityName}`);
+        console.log(`📍 Coordinates: ${this.lat}, ${this.lon}`);
+        console.log(`👤 User: ${userEmail} (${userId})`);
+        
+        this.http.post('http://localhost:3000/webhook/weather-fetch', {
+          city: this.currentCityName,
+          lat: this.lat,
+          lon: this.lon,
+          userId: userId,
+          userEmail: userEmail
+        }).subscribe({
+          next: () => console.log(`✅ Weather fetch webhook sent successfully for: ${this.currentCityName}`),
+          error: (err) => console.error(`❌ Webhook error:`, err)
+        });
+      } catch (error) {
+        console.error('Error decoding token:', error);
+      }
+    } else {
+      console.log(`🔴 No token or coordinates - webhook not sent for city: ${this.currentCityName}`);
+    }
   }
 
   getWeatherData() {
@@ -229,6 +296,9 @@ export class DashboardPage {
           },
           name: this.currentCityName
         };
+        
+        // Send webhook for weather fetch
+        this.sendWeatherFetchWebhook();
       },
       error: (err) => {
         console.error('Erro ao buscar dados meteorológicos atuais:', err);
@@ -402,7 +472,6 @@ export class DashboardPage {
   }
 
   ngAfterViewInit() {
-    // Pré-carregar Leaflet
     this.loadLeaflet();
   }
 }

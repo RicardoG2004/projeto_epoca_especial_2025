@@ -72,8 +72,15 @@ export class RegisterPage {
   constructor(private http: HttpClient, private toast: ToastService) {}
 
   register() {
+    console.log("🔐 Attempting to register:", this.email);
+    
+    if (!this.email || !this.password) {
+      this.toast.show('Por favor, preencha todos os campos.', 'error');
+      return;
+    }
+    
     this.http
-      .post<{ message?: string; error?: string }>(
+      .post<{ message?: string; error?: string; user?: any }>(
         'http://localhost:3000/register',
         {
           email: this.email,
@@ -82,10 +89,17 @@ export class RegisterPage {
       )
       .subscribe({
         next: (res) => {
-          this.toast.show(res.message || 'Registration successful!', 'success');
+          console.log("✅ Registration response:", res);
+          this.toast.show(res.message || 'Registo bem-sucedido!', 'success');
+          
+          // Clear form after successful registration
+          this.email = '';
+          this.password = '';
         },
         error: (err) => {
-          this.toast.show(err.error?.error || 'Registration failed.', 'error');
+          console.log("❌ Registration error:", err);
+          const errorMessage = err.error?.error || err.message || 'Erro no registo. Tente novamente.';
+          this.toast.show(errorMessage, 'error');
         },
       });
   }
