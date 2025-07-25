@@ -3,6 +3,7 @@ import { ApiDemoPage } from './api-demo.page';
 import { LoginPage } from './login.page';
 import { RegisterPage } from './register.page';
 import { DashboardPage } from './dashboard.page';
+import { ForecastPage } from './forecast.page';
 import { authGuard } from './auth.guard';
 import { FormsModule } from '@angular/forms';
 
@@ -14,6 +15,11 @@ export const routes: Routes = [
   {
     path: 'dashboard',
     component: DashboardPage,
+    canActivate: [authGuard],
+  },
+  {
+    path: 'forecast',
+    component: ForecastPage,
     canActivate: [authGuard],
   },
 ];

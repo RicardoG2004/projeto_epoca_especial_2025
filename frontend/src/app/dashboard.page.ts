@@ -2,7 +2,7 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpClient, HttpClientModule } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 
 interface WeatherData {
   main: {
@@ -84,7 +84,7 @@ interface WeatherData {
             </div>
             
             <!-- Weather Details Grid -->
-            <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin-bottom:1rem;">
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin-bottom:1.5rem;">
               <div style="text-align:center; padding:1rem; background:#fff; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
                 <div style="font-size:1.8rem; font-weight:bold; color:#1976d2;">
                   {{ Math.round(weatherData.main.feels_like) }}°C
@@ -99,12 +99,20 @@ interface WeatherData {
               </div>
             </div>
             
-            <div style="text-align:center; padding:1rem; background:#fff; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+            <div style="text-align:center; padding:1rem; background:#fff; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08); margin-bottom:1.5rem;">
               <div style="font-size:1.8rem; font-weight:bold; color:#1976d2;">
                 {{ Math.round(weatherData.wind.speed) }} km/h
               </div>
               <div style="color:#666; font-size:0.9rem;">Velocidade do Vento</div>
             </div>
+
+            <!-- Forecast Button -->
+            <button
+              (click)="goToForecast()"
+              style="width:100%; padding:1rem; border-radius:8px; background:linear-gradient(135deg, #4caf50 0%, #45a049 100%); color:#fff; border:none; font-weight:bold; font-size:1rem; cursor:pointer; transition:all 0.2s; box-shadow:0 4px 12px rgba(76,175,80,0.3);"
+            >
+              📅 Ver Previsão para os Próximos Dias
+            </button>
           </div>
           
           <!-- Map Card -->
@@ -131,7 +139,24 @@ export class DashboardPage {
   weatherData: WeatherData | null = null;
   Math = Math; // Para usar Math no template
 
-  constructor(private http: HttpClient, private router: Router) {}
+  constructor(private http: HttpClient, private router: Router, private route: ActivatedRoute) {}
+
+  ngOnInit() {
+    // Verificar se há parâmetros na URL (quando regressa da página de previsão)
+    this.route.queryParams.subscribe(params => {
+      const lat = params['lat'];
+      const lon = params['lon'];
+      const city = params['city'];
+      
+      if (lat && lon && city) {
+        this.address = city;
+        this.lat = parseFloat(lat);
+        this.lon = parseFloat(lon);
+        setTimeout(() => this.showMap(), 0);
+        this.getWeatherData();
+      }
+    });
+  }
 
   searchAddress() {
     this.error = '';
@@ -166,10 +191,10 @@ export class DashboardPage {
   getWeatherData() {
     if (!this.lat || !this.lon) return;
     
-    // Usando a API gratuita do Open-Meteo (não requer chave de API)
-    const url = `https://api.open-meteo.com/v1/forecast?latitude=${this.lat}&longitude=${this.lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,wind_speed_10m,weather_code&timezone=auto`;
+    // Buscar dados meteorológicos atuais
+    const currentUrl = `https://api.open-meteo.com/v1/forecast?latitude=${this.lat}&longitude=${this.lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,wind_speed_10m,weather_code&timezone=auto`;
     
-    this.http.get<any>(url).subscribe({
+    this.http.get<any>(currentUrl).subscribe({
       next: (data) => {
         // Converter dados da API Open-Meteo para o formato esperado
         this.weatherData = {
@@ -180,7 +205,7 @@ export class DashboardPage {
             pressure: 0 // Não disponível nesta API
           },
           weather: [{
-            main: this.getWeatherMain(data.current.weather_code),
+            main: this.getWeatherDescription(data.current.weather_code),
             description: this.getWeatherDescription(data.current.weather_code),
             icon: this.getWeatherIcon(data.current.weather_code)
           }],
@@ -191,44 +216,21 @@ export class DashboardPage {
         };
       },
       error: (err) => {
-        console.error('Erro ao buscar dados meteorológicos:', err);
-        // Se não conseguir buscar dados meteorológicos, ainda mostra o mapa
+        console.error('Erro ao buscar dados meteorológicos atuais:', err);
       }
     });
   }
 
-  getWeatherMain(code: number): string {
-    const weatherCodes: { [key: number]: string } = {
-      0: 'Clear',
-      1: 'Partly cloudy',
-      2: 'Partly cloudy',
-      3: 'Overcast',
-      45: 'Foggy',
-      48: 'Foggy',
-      51: 'Drizzle',
-      53: 'Drizzle',
-      55: 'Drizzle',
-      56: 'Drizzle',
-      57: 'Drizzle',
-      61: 'Rain',
-      63: 'Rain',
-      65: 'Rain',
-      66: 'Rain',
-      67: 'Rain',
-      71: 'Snow',
-      73: 'Snow',
-      75: 'Snow',
-      77: 'Snow',
-      80: 'Rain',
-      81: 'Rain',
-      82: 'Rain',
-      85: 'Snow',
-      86: 'Snow',
-      95: 'Thunderstorm',
-      96: 'Thunderstorm',
-      99: 'Thunderstorm'
-    };
-    return weatherCodes[code] || 'Unknown';
+  goToForecast() {
+    if (this.lat && this.lon && this.address) {
+      this.router.navigate(['/forecast'], {
+        queryParams: {
+          lat: this.lat,
+          lon: this.lon,
+          city: this.address
+        }
+      });
+    }
   }
 
   getWeatherDescription(code: number): string {
