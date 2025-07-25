@@ -118,7 +118,7 @@ interface WeatherData {
           <!-- Map Card -->
           <div *ngIf="lat && lon" style="padding:1.5rem; background:linear-gradient(135deg, #f8f9ff 0%, #e8f4fd 100%); border-radius:12px; border:1px solid #e3f2fd; box-shadow:0 4px 16px rgba(25,118,210,0.1);">
             <h3 style="color:#1976d2; margin-bottom:1.5rem; text-align:center; font-size:1.4rem; font-weight:600;">
-              🗺️ Localização de {{ address }}
+              🗺️ Localização de {{ currentCityName }}
             </h3>
             <div
               id="map"
@@ -138,6 +138,8 @@ export class DashboardPage {
   error = '';
   weatherData: WeatherData | null = null;
   Math = Math; // Para usar Math no template
+  private currentMap: any = null; // Para armazenar a referência do mapa atual
+  currentCityName = ''; // Para armazenar o nome da cidade atual
 
   constructor(private http: HttpClient, private router: Router, private route: ActivatedRoute) {}
 
@@ -149,7 +151,8 @@ export class DashboardPage {
       const city = params['city'];
       
       if (lat && lon && city) {
-        this.address = city;
+        this.currentCityName = city;
+        this.address = city; // Também atualizar o campo de pesquisa
         this.lat = parseFloat(lat);
         this.lon = parseFloat(lon);
         setTimeout(() => this.showMap(), 0);
@@ -161,6 +164,13 @@ export class DashboardPage {
   searchAddress() {
     this.error = '';
     this.weatherData = null;
+    
+    // Limpar mapa anterior se existir
+    if (this.currentMap) {
+      this.currentMap.remove();
+      this.currentMap = null;
+    }
+    
     if (!this.address) return;
     this.http
       .get<any[]>(
@@ -174,7 +184,12 @@ export class DashboardPage {
           if (results.length > 0) {
             this.lat = parseFloat(results[0].lat);
             this.lon = parseFloat(results[0].lon);
-            setTimeout(() => this.showMap(), 0);
+            // Atualizar o nome da cidade atual apenas quando a pesquisa for bem-sucedida
+            this.currentCityName = this.address;
+            // Aguardar um pouco para garantir que o DOM seja atualizado
+            setTimeout(() => {
+              this.showMap();
+            }, 200);
             this.getWeatherData();
           } else {
             this.error = 'Cidade não encontrada.';
@@ -212,7 +227,7 @@ export class DashboardPage {
           wind: {
             speed: data.current.wind_speed_10m
           },
-          name: this.address
+          name: this.currentCityName
         };
       },
       error: (err) => {
@@ -222,12 +237,12 @@ export class DashboardPage {
   }
 
   goToForecast() {
-    if (this.lat && this.lon && this.address) {
+    if (this.lat && this.lon && this.currentCityName) {
       this.router.navigate(['/forecast'], {
         queryParams: {
           lat: this.lat,
           lon: this.lon,
-          city: this.address
+          city: this.currentCityName
         }
       });
     }
@@ -302,32 +317,92 @@ export class DashboardPage {
   }
 
   showMap() {
-    if (!(window as any).L) return;
-    const mapContainer = document.getElementById('map');
-    if (!mapContainer) return;
-    mapContainer.innerHTML = '';
-    const map = (window as any).L.map('map').setView([this.lat, this.lon], 14);
-    (window as any).L.tileLayer(
-      'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-      {
-        maxZoom: 19,
-        attribution: '© OpenStreetMap',
+    // Aguardar um pouco mais para garantir que o DOM esteja pronto
+    setTimeout(() => {
+      if (!(window as any).L) {
+        // Se Leaflet não estiver carregado, carregar primeiro
+        this.loadLeaflet().then(() => {
+          this.initializeMap();
+        });
+      } else {
+        this.initializeMap();
       }
-    ).addTo(map);
-    (window as any).L.marker([this.lat, this.lon]).addTo(map);
+    }, 100);
+  }
+
+  initializeMap() {
+    const mapContainer = document.getElementById('map');
+    if (!mapContainer || !this.lat || !this.lon) return;
+    
+    // Destruir o mapa anterior se existir
+    if (this.currentMap) {
+      this.currentMap.remove();
+      this.currentMap = null;
+    }
+    
+    // Limpar o container
+    mapContainer.innerHTML = '';
+    
+    try {
+      // Criar novo mapa
+      this.currentMap = (window as any).L.map('map').setView([this.lat, this.lon], 14);
+      
+      // Adicionar camada de tiles
+      (window as any).L.tileLayer(
+        'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+        {
+          maxZoom: 19,
+          attribution: '© OpenStreetMap',
+        }
+      ).addTo(this.currentMap);
+      
+      // Adicionar marcador
+      (window as any).L.marker([this.lat, this.lon]).addTo(this.currentMap);
+      
+      // Forçar redraw do mapa
+      setTimeout(() => {
+        if (this.currentMap) {
+          this.currentMap.invalidateSize();
+        }
+      }, 100);
+      
+    } catch (error) {
+      console.error('Erro ao inicializar mapa:', error);
+    }
+  }
+
+  loadLeaflet(): Promise<void> {
+    return new Promise((resolve) => {
+      // Verificar se já está carregado
+      if ((window as any).L) {
+        resolve();
+        return;
+      }
+
+      // Carregar CSS
+      if (!document.querySelector('link[href*="leaflet.css"]')) {
+        const link = document.createElement('link');
+        link.rel = 'stylesheet';
+        link.href = 'https://unpkg.com/leaflet/dist/leaflet.css';
+        document.head.appendChild(link);
+      }
+
+      // Carregar JavaScript
+      const script = document.createElement('script');
+      script.src = 'https://unpkg.com/leaflet/dist/leaflet.js';
+      script.onload = () => {
+        resolve();
+      };
+      script.onerror = () => {
+        console.error('Erro ao carregar Leaflet');
+        resolve();
+      };
+      document.body.appendChild(script);
+    });
   }
 
   ngAfterViewInit() {
-    // Load Leaflet if not already loaded
-    if (!(window as any).L) {
-      const link = document.createElement('link');
-      link.rel = 'stylesheet';
-      link.href = 'https://unpkg.com/leaflet/dist/leaflet.css';
-      document.head.appendChild(link);
-      const script = document.createElement('script');
-      script.src = 'https://unpkg.com/leaflet/dist/leaflet.js';
-      script.onload = () => {};
-      document.body.appendChild(script);
-    }
+    // Pré-carregar Leaflet
+    this.loadLeaflet();
   }
 }
