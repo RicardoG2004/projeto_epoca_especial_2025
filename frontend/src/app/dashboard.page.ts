@@ -28,10 +28,10 @@ interface WeatherData {
   imports: [CommonModule, HttpClientModule, FormsModule],
   template: `
     <div
-      style="min-height: 100vh; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #e3f0ff 0%, #fafcff 100%);"
+      style="min-height: 100vh; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #e3f0ff 0%, #fafcff 100%); padding: 2rem;"
     >
       <div
-        style="max-width: 600px; width: 100%; padding: 2.5rem 2rem; border-radius: 16px; box-shadow: 0 8px 32px rgba(60,60,120,0.10), 0 1.5px 6px rgba(60,60,120,0.08); background: #fff; margin: auto; display: flex; flex-direction: column; align-items: center;"
+        style="max-width: 1200px; width: 100%; padding: 2.5rem 2rem; border-radius: 16px; box-shadow: 0 8px 32px rgba(60,60,120,0.10), 0 1.5px 6px rgba(60,60,120,0.08); background: #fff; margin: auto; display: flex; flex-direction: column; align-items: center;"
       >
         <h2 style="color: #1976d2; font-weight: 700; margin-bottom: 1.5rem;">
           WeatherMap
@@ -48,7 +48,7 @@ interface WeatherData {
             name="address"
             required
             placeholder="Digite o nome da cidade"
-            style="width:100%; padding:0.75rem; border-radius:8px; border:1px solid #cfd8dc; font-size:1rem; background:#f7fbff; text-align:center;"
+            style="width:100%; max-width:400px; padding:0.75rem; border-radius:8px; border:1px solid #cfd8dc; font-size:1rem; background:#f7fbff; text-align:center;"
           />
           <button
             type="submit"
@@ -61,54 +61,64 @@ interface WeatherData {
           {{ error }}
         </div>
         
-        <!-- Weather Information -->
-        <div *ngIf="weatherData" style="width:100%; margin-top:2rem; padding:1.5rem; background:linear-gradient(135deg, #f8f9ff 0%, #e8f4fd 100%); border-radius:12px; border:1px solid #e3f2fd;">
-          <h3 style="color:#1976d2; margin-bottom:1rem; text-align:center; font-size:1.3rem;">
-            Meteorologia em {{ weatherData.name }}
-          </h3>
+        <!-- Results Container -->
+        <div *ngIf="weatherData || (lat && lon)" style="width:100%; margin-top:2rem; display:grid; grid-template-columns:1fr 1fr; gap:2rem;">
           
-          <!-- Weather Icon and Main Info -->
-          <div style="text-align:center; margin-bottom:1.5rem; padding:1rem; background:#fff; border-radius:12px; box-shadow:0 4px 12px rgba(0,0,0,0.1);">
-            <div style="font-size:4rem; margin-bottom:0.5rem;">
-              {{ weatherData.weather[0].icon }}
+          <!-- Weather Information Card -->
+          <div *ngIf="weatherData" style="padding:1.5rem; background:linear-gradient(135deg, #f8f9ff 0%, #e8f4fd 100%); border-radius:12px; border:1px solid #e3f2fd; box-shadow:0 4px 16px rgba(25,118,210,0.1);">
+            <h3 style="color:#1976d2; margin-bottom:1.5rem; text-align:center; font-size:1.4rem; font-weight:600;">
+              🌤️ Meteorologia em {{ weatherData.name }}
+            </h3>
+            
+            <!-- Weather Icon and Main Info -->
+            <div style="text-align:center; margin-bottom:1.5rem; padding:1.5rem; background:#fff; border-radius:12px; box-shadow:0 4px 12px rgba(0,0,0,0.1);">
+              <div style="font-size:4rem; margin-bottom:0.5rem;">
+                {{ weatherData.weather[0].icon }}
+              </div>
+              <div style="font-size:2.5rem; font-weight:bold; color:#1976d2; margin-bottom:0.5rem;">
+                {{ Math.round(weatherData.main.temp) }}°C
+              </div>
+              <div style="color:#666; font-size:1.1rem; text-transform:capitalize;">
+                {{ weatherData.weather[0].description }}
+              </div>
             </div>
-            <div style="font-size:2.5rem; font-weight:bold; color:#1976d2; margin-bottom:0.5rem;">
-              {{ Math.round(weatherData.main.temp) }}°C
+            
+            <!-- Weather Details Grid -->
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin-bottom:1rem;">
+              <div style="text-align:center; padding:1rem; background:#fff; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+                <div style="font-size:1.8rem; font-weight:bold; color:#1976d2;">
+                  {{ Math.round(weatherData.main.feels_like) }}°C
+                </div>
+                <div style="color:#666; font-size:0.9rem;">Sensação Térmica</div>
+              </div>
+              <div style="text-align:center; padding:1rem; background:#fff; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+                <div style="font-size:1.8rem; font-weight:bold; color:#1976d2;">
+                  {{ weatherData.main.humidity }}%
+                </div>
+                <div style="color:#666; font-size:0.9rem;">Humidade</div>
+              </div>
             </div>
-            <div style="color:#666; font-size:1.1rem; text-transform:capitalize;">
-              {{ weatherData.weather[0].description }}
-            </div>
-          </div>
-          
-          <!-- Weather Details Grid -->
-          <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin-bottom:1rem;">
+            
             <div style="text-align:center; padding:1rem; background:#fff; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
               <div style="font-size:1.8rem; font-weight:bold; color:#1976d2;">
-                {{ Math.round(weatherData.main.feels_like) }}°C
+                {{ Math.round(weatherData.wind.speed) }} km/h
               </div>
-              <div style="color:#666; font-size:0.9rem;">Sensação Térmica</div>
-            </div>
-            <div style="text-align:center; padding:1rem; background:#fff; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
-              <div style="font-size:1.8rem; font-weight:bold; color:#1976d2;">
-                {{ weatherData.main.humidity }}%
-              </div>
-              <div style="color:#666; font-size:0.9rem;">Humidade</div>
+              <div style="color:#666; font-size:0.9rem;">Velocidade do Vento</div>
             </div>
           </div>
           
-          <div style="text-align:center; padding:1rem; background:#fff; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
-            <div style="font-size:1.8rem; font-weight:bold; color:#1976d2;">
-              {{ Math.round(weatherData.wind.speed) }} km/h
-            </div>
-            <div style="color:#666; font-size:0.9rem;">Velocidade do Vento</div>
+          <!-- Map Card -->
+          <div *ngIf="lat && lon" style="padding:1.5rem; background:linear-gradient(135deg, #f8f9ff 0%, #e8f4fd 100%); border-radius:12px; border:1px solid #e3f2fd; box-shadow:0 4px 16px rgba(25,118,210,0.1);">
+            <h3 style="color:#1976d2; margin-bottom:1.5rem; text-align:center; font-size:1.4rem; font-weight:600;">
+              🗺️ Localização de {{ address }}
+            </h3>
+            <div
+              id="map"
+              style="width:100%; height:400px; border-radius:12px; box-shadow:0 4px 12px rgba(25,118,210,0.1); background:#f0f8ff;"
+            ></div>
           </div>
+          
         </div>
-        
-        <div
-          id="map"
-          style="width:100%; height:300px; margin-top:2rem; border-radius:12px; box-shadow:0 2px 8px rgba(25,118,210,0.08);"
-          *ngIf="lat && lon"
-        ></div>
       </div>
     </div>
   `,
