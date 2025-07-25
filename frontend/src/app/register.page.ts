@@ -19,7 +19,7 @@ import { ToastService } from './toast.service';
         <h2
           style="text-align:center; margin-bottom: 2rem; color: #388e3c; letter-spacing: 1px; font-weight: 700;"
         >
-          Register
+          Registe-se
         </h2>
         <form
           (ngSubmit)="register()"
@@ -59,11 +59,11 @@ import { ToastService } from './toast.service';
           routerLink="/login"
           style="margin-top: 1.5rem; padding: 0.8rem 1.5rem; border-radius: 8px; background: #fff; color: #388e3c; border: 2px solid #388e3c; font-weight: bold; font-size: 1rem; cursor: pointer; transition: background 0.2s; width: 100%; max-width: 320px;"
         >
-          Already have an account? Login
+          Ja tem conta? Login
         </button>
       </div>
     </div>
-  `,
+  `
 })
 export class RegisterPage {
   email = '';

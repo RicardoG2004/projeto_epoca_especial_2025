@@ -1,0 +1,5 @@
+# Copie este conteúdo para um arquivo chamado .env na raiz do projeto
+# Substitua os valores pelos dados reais do seu projeto Supabase
+
+SUPABASE_URL=https://exemplo.supabase.co
+SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.exemplo.exemplo 

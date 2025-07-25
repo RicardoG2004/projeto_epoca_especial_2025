@@ -71,7 +71,7 @@ import { ToastService } from './toast.service';
       style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #fff; z-index: 1000; display: flex; flex-direction: column; align-items: center; justify-content: center;"
     >
       <img
-        src="/pig.gif"
+        src="/location.gif"
         alt="Loading..."
         style="width: 96px; height: 96px; display: block; margin: 0 auto;"
       />
@@ -88,7 +88,7 @@ import { ToastService } from './toast.service';
       <a
         routerLink="/register"
         style="color: #1976d2; text-decoration: none; font-weight: 600; margin-left: 0.3rem;"
-        >Register</a
+        >Registe-se</a
       >
     </div>
   `,

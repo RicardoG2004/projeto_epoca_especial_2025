@@ -16,10 +16,10 @@ import { Router } from '@angular/router';
         style="max-width: 500px; width: 100%; padding: 2.5rem 2rem; border-radius: 16px; box-shadow: 0 8px 32px rgba(60,60,120,0.10), 0 1.5px 6px rgba(60,60,120,0.08); background: #fff; margin: auto; display: flex; flex-direction: column; align-items: center;"
       >
         <h2 style="color: #1976d2; font-weight: 700; margin-bottom: 1.5rem;">
-          Dashboard
+          WeatherMap
         </h2>
         <p style="font-size: 1.2rem; color: #333; text-align: center;">
-          Welcome! You are logged in and can access this protected page.
+          Bem Vindo, escolha a cidade que deseja procurar.
         </p>
         <form
           (ngSubmit)="searchAddress()"
@@ -29,14 +29,14 @@ import { Router } from '@angular/router';
             [(ngModel)]="address"
             name="address"
             required
-            placeholder="Enter address"
+            placeholder="Digite o nome da cidade"
             style="width:100%; padding:0.75rem; border-radius:8px; border:1px solid #cfd8dc; font-size:1rem; background:#f7fbff; text-align:center;"
           />
           <button
             type="submit"
             style="padding:0.7rem 1.5rem; border-radius:8px; background:#1976d2; color:#fff; border:none; font-weight:bold; font-size:1rem; cursor:pointer;"
           >
-            Show on Map
+            Mostrar no mapa
           </button>
         </form>
         <div *ngIf="error" style="color:#d32f2f; margin-top:1rem;">
@@ -70,6 +70,7 @@ export class DashboardPage {
       )
       .subscribe({
         next: (results) => {
+          
           if (results.length > 0) {
             this.lat = parseFloat(results[0].lat);
             this.lon = parseFloat(results[0].lon);

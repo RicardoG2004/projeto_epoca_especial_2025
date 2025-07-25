@@ -1,0 +1,42 @@
+version: '3.8'
+
+services:
+  api:
+    build:
+      context: ./api-cheba
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+      - SUPABASE_URL=https://nwqfdcjeuwqrrszrlfif.supabase.co
+      - SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im53cWZkY2pldXdxcnJzenJsZmlmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTMxMDM4MzksImV4cCI6MjA2ODY3OTgzOX0.l8IxjY5IYuF_L42rJFjIfzWGrVFhfV2IVKm09pJDCZs
+    env_file:
+      - .env
+    volumes:
+      - ./api-cheba:/app
+      - /app/node_modules
+    networks:
+      - app-network
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "4200:4200"
+    environment:
+      - NODE_ENV=development
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    networks:
+      - app-network
+    depends_on:
+      - api
+    restart: unless-stopped
+
+networks:
+  app-network:
+    driver: bridge 
