@@ -27,111 +27,389 @@ interface WeatherData {
   standalone: true,
   imports: [CommonModule, HttpClientModule, FormsModule],
   template: `
-    <div
-      style="min-height: 100vh; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #e3f0ff 0%, #fafcff 100%); padding: 2rem;"
-    >
-      <div
-        style="max-width: 1200px; width: 100%; padding: 2.5rem 2rem; border-radius: 16px; box-shadow: 0 8px 32px rgba(60,60,120,0.10), 0 1.5px 6px rgba(60,60,120,0.08); background: #fff; margin: auto; display: flex; flex-direction: column; align-items: center;"
-      >
-        <h2 style="color: #1976d2; font-weight: 700; margin-bottom: 1.5rem;">
-          WeatherMap
-        </h2>
-        <p style="color: #666; text-align: center; margin-bottom: 2rem; font-size: 1rem;">
-          Bem Vindo, escolha a cidade que deseja procurar.
-        </p>
+    <div class="dashboard-container">
+      <!-- Background with animated elements -->
+      <div class="background-animation">
+        <div class="floating-shape shape-1"></div>
+        <div class="floating-shape shape-2"></div>
+        <div class="floating-shape shape-3"></div>
+      </div>
 
-        <!-- Search Section -->
-        <form
-          (ngSubmit)="searchAddress()"
-          style="width:100%; margin-top:2rem; display:flex; flex-direction:column; align-items:center; gap:1rem;"
-        >
-          <input
-            [(ngModel)]="address"
-            name="address"
-            required
-            placeholder="Digite o nome da cidade"
-            style="width:100%; max-width:400px; padding:0.75rem; border-radius:8px; border:1px solid #cfd8dc; font-size:1rem; background:#f7fbff; text-align:center;"
-          />
-          <button
-            type="submit"
-            style="padding:0.7rem 1.5rem; border-radius:8px; background:#1976d2; color:#fff; border:none; font-weight:bold; font-size:1rem; cursor:pointer;"
-          >
-            Mostrar mapa e meteorologia
-          </button>
-        </form>
-        <div *ngIf="error" style="color:#d32f2f; margin-top:1rem;">
-          {{ error }}
-        </div>
-        
-        <!-- Results Container -->
-        <div *ngIf="weatherData || (lat && lon)" style="width:100%; margin-top:2rem; display:grid; grid-template-columns:1fr 1fr; gap:2rem;">
-          
-          <!-- Weather Information Card -->
-          <div *ngIf="weatherData" style="padding:1.5rem; background:linear-gradient(135deg, #f8f9ff 0%, #e8f4fd 100%); border-radius:12px; border:1px solid #e3f2fd; box-shadow:0 4px 16px rgba(25,118,210,0.1);">
-            <h3 style="color:#1976d2; margin-bottom:1.5rem; text-align:center; font-size:1.4rem; font-weight:600;">
-              🌤️ Meteorologia em {{ weatherData.name }}
-            </h3>
-            
-            <!-- Weather Icon and Main Info -->
-            <div style="text-align:center; margin-bottom:1.5rem; padding:1.5rem; background:#fff; border-radius:12px; box-shadow:0 4px 12px rgba(0,0,0,0.1);">
-              <div style="font-size:4rem; margin-bottom:0.5rem;">
-                {{ weatherData.weather[0].icon }}
-              </div>
-              <div style="font-size:2.5rem; font-weight:bold; color:#1976d2; margin-bottom:0.5rem;">
-                {{ Math.round(weatherData.main.temp) }}°C
-              </div>
-              <div style="color:#666; font-size:1.1rem; text-transform:capitalize;">
-                {{ weatherData.weather[0].description }}
-              </div>
-            </div>
-            
-            <!-- Weather Details Grid -->
-            <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin-bottom:1.5rem;">
-              <div style="text-align:center; padding:1rem; background:#fff; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
-                <div style="font-size:1.8rem; font-weight:bold; color:#1976d2;">
-                  {{ Math.round(weatherData.main.feels_like) }}°C
-                </div>
-                <div style="color:#666; font-size:0.9rem;">Sensação Térmica</div>
-              </div>
-              <div style="text-align:center; padding:1rem; background:#fff; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
-                <div style="font-size:1.8rem; font-weight:bold; color:#1976d2;">
-                  {{ weatherData.main.humidity }}%
-                </div>
-                <div style="color:#666; font-size:0.9rem;">Humidade</div>
-              </div>
-            </div>
-            
-            <div style="text-align:center; padding:1rem; background:#fff; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08); margin-bottom:1.5rem;">
-              <div style="font-size:1.8rem; font-weight:bold; color:#1976d2;">
-                {{ Math.round(weatherData.wind.speed) }} km/h
-              </div>
-              <div style="color:#666; font-size:0.9rem;">Velocidade do Vento</div>
-            </div>
+      <!-- Main content -->
+      <div class="dashboard-content">
+        <!-- Dashboard content -->
+        <div class="dashboard-card">
+          <div class="card-header">
+            <h2 class="welcome-text">Bem-vindo ao WeatherMap!</h2>
+            <p class="dashboard-description">Escolha a cidade que deseja procurar</p>
+          </div>
 
-            <!-- Forecast Button -->
-            <button
-              (click)="goToForecast()"
-              style="width:100%; padding:1rem; border-radius:8px; background:linear-gradient(135deg, #4caf50 0%, #45a049 100%); color:#fff; border:none; font-weight:bold; font-size:1rem; cursor:pointer; transition:all 0.2s; box-shadow:0 4px 12px rgba(76,175,80,0.3);"
-            >
-              📅 Ver Previsão para os Próximos Dias
+          <!-- Search Section -->
+          <form (ngSubmit)="searchAddress()" class="search-form">
+            <div class="input-group">
+              <label class="input-label">
+                <span class="label-icon">🔍</span>
+                Cidade
+              </label>
+              <input
+                [(ngModel)]="address"
+                name="address"
+                required
+                placeholder="Digite o nome da cidade"
+                class="form-input"
+              />
+            </div>
+            <button type="submit" class="search-button">
+              <span>Mostrar mapa e meteorologia</span>
             </button>
+          </form>
+
+          <div *ngIf="error" class="error-message">
+            {{ error }}
           </div>
           
-          <!-- Map Card -->
-          <div *ngIf="lat && lon" style="padding:1.5rem; background:linear-gradient(135deg, #f8f9ff 0%, #e8f4fd 100%); border-radius:12px; border:1px solid #e3f2fd; box-shadow:0 4px 16px rgba(25,118,210,0.1);">
-            <h3 style="color:#1976d2; margin-bottom:1.5rem; text-align:center; font-size:1.4rem; font-weight:600;">
-              🗺️ Localização de {{ currentCityName }}
-            </h3>
-            <div
-              id="map"
-              style="width:100%; height:400px; border-radius:12px; box-shadow:0 4px 12px rgba(25,118,210,0.1); background:#f0f8ff;"
-            ></div>
+          <!-- Results Container -->
+          <div *ngIf="weatherData || (lat && lon)" class="results-container">
+            
+            <!-- Weather Information Card -->
+            <div *ngIf="weatherData" class="weather-card">
+              <h3 class="weather-title">
+                🌤️ Meteorologia em {{ weatherData.name }}
+              </h3>
+              
+              <!-- Weather Icon and Main Info -->
+              <div class="weather-main">
+                <div class="weather-icon">
+                  {{ weatherData.weather[0].icon }}
+                </div>
+                <div class="temperature">
+                  {{ Math.round(weatherData.main.temp) }}°C
+                </div>
+                <div class="weather-description">
+                  {{ weatherData.weather[0].description }}
+                </div>
+              </div>
+              
+              <!-- Weather Details Grid -->
+              <div class="weather-details">
+                <div class="detail-item">
+                  <div class="detail-value">
+                    {{ Math.round(weatherData.main.feels_like) }}°C
+                  </div>
+                  <div class="detail-label">Sensação Térmica</div>
+                </div>
+                <div class="detail-item">
+                  <div class="detail-value">
+                    {{ weatherData.main.humidity }}%
+                  </div>
+                  <div class="detail-label">Humidade</div>
+                </div>
+                <div class="detail-item">
+                  <div class="detail-value">
+                    {{ Math.round(weatherData.wind.speed) }} km/h
+                  </div>
+                  <div class="detail-label">Velocidade do Vento</div>
+                </div>
+              </div>
+
+              <!-- Forecast Button -->
+              <button (click)="goToForecast()" class="forecast-button">
+                📅 Ver Previsão para os Próximos Dias
+              </button>
+            </div>
+            
+            <!-- Map Card -->
+            <div *ngIf="lat && lon" class="map-card">
+              <h3 class="map-title">
+                🗺️ Localização de {{ currentCityName }}
+              </h3>
+              <div id="map" class="map-container"></div>
+            </div>
+            
           </div>
-          
         </div>
       </div>
     </div>
   `,
+  styles: [`
+    .dashboard-container {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #1e3c72 0%, #2a5298 50%, #4a90e2 100%);
+      position: relative;
+      overflow: hidden;
+      padding: 2rem;
+    }
+
+    .background-animation {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+    }
+
+    .floating-shape {
+      position: absolute;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.1);
+      animation: float 6s ease-in-out infinite;
+    }
+
+    .shape-1 {
+      width: 100px;
+      height: 100px;
+      top: 10%;
+      left: 10%;
+      animation-delay: 0s;
+    }
+
+    .shape-2 {
+      width: 150px;
+      height: 150px;
+      top: 60%;
+      right: 10%;
+      animation-delay: 2s;
+    }
+
+    .shape-3 {
+      width: 80px;
+      height: 80px;
+      bottom: 20%;
+      left: 20%;
+      animation-delay: 4s;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0px) rotate(0deg); }
+      50% { transform: translateY(-20px) rotate(180deg); }
+    }
+
+    .dashboard-content {
+      display: flex;
+      justify-content: center;
+      max-width: 1200px;
+      width: 100%;
+      z-index: 1;
+    }
+
+    .dashboard-card {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      border-radius: 20px;
+      padding: 3rem;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+      border: 1px solid rgba(255,255,255,0.2);
+      max-height: 90vh;
+      overflow-y: auto;
+      width: 100%;
+    }
+
+    .card-header {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    .welcome-text {
+      font-size: 2rem;
+      font-weight: 700;
+      color: #1e3c72;
+      margin: 0 0 0.5rem 0;
+    }
+
+    .dashboard-description {
+      color: #666;
+      font-size: 1rem;
+      margin: 0;
+    }
+
+    .search-form {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    .input-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .input-label {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-weight: 600;
+      color: #333;
+      font-size: 0.9rem;
+    }
+
+    .label-icon {
+      font-size: 1rem;
+    }
+
+    .form-input {
+      padding: 1rem;
+      border: 2px solid #e1e5e9;
+      border-radius: 12px;
+      font-size: 1rem;
+      transition: all 0.3s ease;
+      background: #f8f9fa;
+    }
+
+    .form-input:focus {
+      outline: none;
+      border-color: #1e3c72;
+      background: white;
+      box-shadow: 0 0 0 3px rgba(30, 60, 114, 0.1);
+    }
+
+    .search-button {
+      padding: 1rem;
+      background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      font-size: 1.1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .search-button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 20px rgba(30, 60, 114, 0.3);
+      background: linear-gradient(135deg, #2a5298 0%, #4a90e2 100%);
+    }
+
+    .error-message {
+      color: #e74c3c;
+      text-align: center;
+      margin: 1rem 0;
+      padding: 1rem;
+      background: rgba(231, 76, 60, 0.1);
+      border-radius: 8px;
+    }
+
+    .results-container {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+      margin-top: 2rem;
+    }
+
+    .weather-card, .map-card {
+      background: linear-gradient(135deg, #f8f9ff 0%, #e8f4fd 100%);
+      border-radius: 16px;
+      padding: 2rem;
+      border: 1px solid #e3f2fd;
+      box-shadow: 0 8px 24px rgba(25,118,210,0.1);
+    }
+
+    .weather-title, .map-title {
+      color: #1e3c72;
+      margin-bottom: 1.5rem;
+      text-align: center;
+      font-size: 1.4rem;
+      font-weight: 600;
+    }
+
+    .weather-main {
+      text-align: center;
+      margin-bottom: 1.5rem;
+      padding: 1.5rem;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+
+    .weather-icon {
+      font-size: 4rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .temperature {
+      font-size: 2.5rem;
+      font-weight: bold;
+      color: #1e3c72;
+      margin-bottom: 0.5rem;
+    }
+
+    .weather-description {
+      color: #666;
+      font-size: 1.1rem;
+      text-transform: capitalize;
+    }
+
+    .weather-details {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .detail-item {
+      text-align: center;
+      padding: 1rem;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+
+    .detail-value {
+      font-size: 1.8rem;
+      font-weight: bold;
+      color: #1e3c72;
+    }
+
+    .detail-label {
+      color: #666;
+      font-size: 0.9rem;
+      margin-top: 0.25rem;
+    }
+
+    .forecast-button {
+      width: 100%;
+      padding: 1rem;
+      border-radius: 8px;
+      background: linear-gradient(135deg, #4caf50 0%, #45a049 100%);
+      color: white;
+      border: none;
+      font-weight: bold;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      box-shadow: 0 4px 12px rgba(76,175,80,0.3);
+    }
+
+    .forecast-button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(76,175,80,0.4);
+    }
+
+    .map-container {
+      width: 100%;
+      height: 400px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(25,118,210,0.1);
+      background: #f0f8ff;
+    }
+
+    @media (max-width: 768px) {
+      .dashboard-card {
+        padding: 2rem;
+      }
+
+      .results-container {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+      }
+    }
+  `]
 })
 export class DashboardPage {
   address = '';
