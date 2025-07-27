@@ -86,7 +86,7 @@ fastify.post("/login", async (request, reply) => {
     });
     
     // Return the access_token for frontend to store
-    return { message: "Login successful!", token: data?.session?.access_token };
+    return { message: "Login bem sucedido!", token: data?.session?.access_token };
   } catch (error) {
     fastify.log.error('Login error:', error);
     return reply.code(500).send({ error: 'Internal server error' });

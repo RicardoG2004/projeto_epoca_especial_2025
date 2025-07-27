@@ -58,7 +58,7 @@ import { ToastService } from './toast.service';
         <div class="login-card">
           <div class="card-header">
             <h2 class="welcome-text">Bem-vindo de volta!</h2>
-            <p class="login-description">Faça login para aceder ao seu dashboard</p>
+            <p class="login-description"></p>
           </div>
 
           <form (ngSubmit)="login()" #loginForm="ngForm" class="login-form">
@@ -109,13 +109,6 @@ import { ToastService } from './toast.service';
           <button routerLink="/register" class="register-button">
             Criar nova conta
           </button>
-
-          <div class="demo-info">
-            <p class="demo-text">
-              <span class="demo-icon">💡</span>
-              <strong>Demo:</strong> Use qualquer email e password para testar
-            </p>
-          </div>
         </div>
       </div>
     </div>
@@ -438,23 +431,7 @@ import { ToastService } from './toast.service';
       color: white;
     }
 
-    .demo-info {
-      margin-top: 2rem;
-      padding: 1rem;
-      background: rgba(30, 60, 114, 0.1);
-      border-radius: 12px;
-      text-align: center;
-    }
 
-    .demo-text {
-      margin: 0;
-      font-size: 0.9rem;
-      color: #1e3c72;
-    }
-
-    .demo-icon {
-      margin-right: 0.5rem;
-    }
 
     .loading-overlay {
       position: fixed;
@@ -578,7 +555,7 @@ export class LoginPage {
       )
       .subscribe({
         next: (res) => {
-          this.toast.show(res.message || 'Login successful!', 'success');
+          this.toast.show(res.message || 'Login bem sucedido!', 'success');
           if (res.token) {
             localStorage.setItem('token', res.token);
             App.isLoggedInSignal?.set(true);
